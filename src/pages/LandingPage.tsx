@@ -205,7 +205,7 @@ export function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
             <Badge variant="outline" className="text-primary border-primary/30">
-              Why Choose thriftX
+              Why Choose ThriftX
             </Badge>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
               Fashion That Makes a Difference
@@ -283,7 +283,7 @@ export function LandingPage() {
                 <Link to="/register">
                   <Button variant="secondary" size="lg" className="w-full sm:w-auto px-8">
                     <Heart className="mr-2 h-5 w-5" />
-                    Join thriftX
+                    Join ThriftX
                   </Button>
                 </Link>
                 <Link to="/add-item">

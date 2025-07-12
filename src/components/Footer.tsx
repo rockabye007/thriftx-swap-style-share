@@ -15,7 +15,7 @@ export function Footer() {
                 <ShoppingBag className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                thriftX
+                ThriftX
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
@@ -99,7 +99,7 @@ export function Footer() {
         <div className="border-t mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-              <span>© 2024 thriftX. All rights reserved.</span>
+              <span>© 2024 ThriftX. All rights reserved.</span>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Shield className="h-3 w-3 text-primary" />

@@ -111,7 +111,7 @@ export function AuthPage({ mode }: AuthPageProps) {
                 <ShoppingBag className="h-8 w-8 text-white" />
               </div>
               <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                thriftX
+                ThriftX
               </span>
             </Link>
           </div>
@@ -119,7 +119,7 @@ export function AuthPage({ mode }: AuthPageProps) {
           <Card className="shadow-elegant">
             <CardHeader className="text-center space-y-4">
               <CardTitle className="text-2xl font-bold">
-                {isLogin ? 'Welcome Back!' : 'Join thriftX'}
+                {isLogin ? 'Welcome Back!' : 'Join ThriftX'}
               </CardTitle>
               <p className="text-muted-foreground">
                 {isLogin 
@@ -262,7 +262,7 @@ export function AuthPage({ mode }: AuthPageProps) {
           {/* Benefits */}
           {!isLogin && (
             <div className="mt-8 space-y-4">
-              <h3 className="text-center font-semibold text-foreground">Why join thriftX?</h3>
+              <h3 className="text-center font-semibold text-foreground">Why join ThriftX?</h3>
               <div className="grid grid-cols-1 gap-3 text-sm">
                 <div className="flex items-center space-x-3 text-muted-foreground">
                   <div className="w-2 h-2 bg-primary rounded-full" />

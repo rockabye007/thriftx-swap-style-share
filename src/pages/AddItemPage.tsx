@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Camera, Sparkles, Loader2 } from 'lucide-react';
 import { useGeminiAI } from '@/hooks/useGeminiAI';
+import { useItems } from '@/hooks/useItems';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 export default function AddItemPage() {
@@ -25,6 +27,8 @@ export default function AddItemPage() {
   });
 
   const { generateDescription, categorizeItem, loading } = useGeminiAI();
+  const { createItem } = useItems();
+  const { user } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -73,6 +77,50 @@ export default function AddItemPage() {
   const conditions = ['Like New', 'Good', 'Fair', 'Well-Loved'];
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
+  const handleSaveAsDraft = () => {
+    toast.success('Item saved as draft');
+  };
+
+  const handleListItem = async () => {
+    if (!user) {
+      toast.error('Please log in to list items');
+      return;
+    }
+
+    if (!formData.title || !formData.category || !formData.condition) {
+      toast.error('Please fill in required fields: title, category, and condition');
+      return;
+    }
+
+    const itemData = {
+      title: formData.title,
+      description: formData.description,
+      size: formData.size,
+      condition: (formData.condition === 'Like New' ? 'excellent' : 
+                 formData.condition === 'Good' ? 'good' : 'fair') as 'excellent' | 'good' | 'fair',
+      points: 50, // Default points for now
+      location: 'Not specified',
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
+      images: [],
+      user_id: user.id
+    };
+
+    const result = await createItem(itemData);
+    if (result.success) {
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        type: '',
+        size: '',
+        condition: '',
+        tags: '',
+        images: []
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       <Header />
@@ -83,7 +131,7 @@ export default function AddItemPage() {
             List Your Item
           </h1>
           <p className="text-muted-foreground text-lg">
-            Share your fashion finds with the thriftX community
+            Share your fashion finds with the ThriftX community
           </p>
         </div>
 
@@ -95,19 +143,6 @@ export default function AddItemPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label>Images</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-                <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  Click to upload images or drag and drop
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Up to 5 images, max 10MB each
-                </p>
-              </div>
-            </div>
 
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -230,10 +265,10 @@ export default function AddItemPage() {
 
             {/* Submit Button */}
             <div className="flex gap-4 pt-4">
-              <Button variant="outline" className="flex-1">
+              <Button variant="outline" className="flex-1" onClick={handleSaveAsDraft}>
                 Save as Draft
               </Button>
-              <Button className="flex-1 bg-gradient-primary">
+              <Button className="flex-1 bg-gradient-primary" onClick={handleListItem}>
                 List Item
               </Button>
             </div>

@@ -58,7 +58,8 @@ export function useItems() {
         description: item.description || '',
         category: item.category_id, // Will need to map this to category name
         size: item.size || '',
-        condition: item.condition as 'excellent' | 'good' | 'fair',
+        condition: (item.condition === 'Like New' ? 'excellent' : 
+                   item.condition === 'Good' ? 'good' : 'fair') as 'excellent' | 'good' | 'fair',
         points: item.points,
         location: item.location || '',
         tags: item.tags || [],
