@@ -28,7 +28,6 @@ const mockFeaturedItems: Item[] = [
     description: 'Classic blue denim jacket from the 90s',
     images: [featuredItemsImage],
     category: 'Outerwear',
-    type: 'Jacket',
     size: 'M',
     condition: 'excellent',
     tags: ['vintage', 'denim', 'classic'],
@@ -39,9 +38,9 @@ const mockFeaturedItems: Item[] = [
       name: 'Sarah Johnson',
       rating: 4.8
     },
-    createdAt: '2024-01-15T10:30:00Z',
-    isSwapAvailable: true,
-    viewCount: 127
+    created_at: '2024-01-15T10:30:00Z',
+    is_available: true,
+    view_count: 127
   },
   {
     id: '2',
@@ -49,7 +48,6 @@ const mockFeaturedItems: Item[] = [
     description: 'Perfect for evening events',
     images: [featuredItemsImage],
     category: 'Dresses',
-    type: 'Evening',
     size: 'S',
     condition: 'good',
     tags: ['elegant', 'black', 'evening'],
@@ -60,9 +58,9 @@ const mockFeaturedItems: Item[] = [
       name: 'Emma Davis',
       rating: 4.9
     },
-    createdAt: '2024-01-14T14:20:00Z',
-    isSwapAvailable: true,
-    viewCount: 89
+    created_at: '2024-01-14T14:20:00Z',
+    is_available: true,
+    view_count: 89
   },
   {
     id: '3',
@@ -70,7 +68,6 @@ const mockFeaturedItems: Item[] = [
     description: 'Warm wool sweater perfect for cold days',
     images: [featuredItemsImage],
     category: 'Knitwear',
-    type: 'Sweater',
     size: 'L',
     condition: 'excellent',
     tags: ['wool', 'winter', 'cozy'],
@@ -81,9 +78,9 @@ const mockFeaturedItems: Item[] = [
       name: 'Michael Chen',
       rating: 4.7
     },
-    createdAt: '2024-01-13T09:15:00Z',
-    isSwapAvailable: true,
-    viewCount: 156
+    created_at: '2024-01-13T09:15:00Z',
+    is_available: true,
+    view_count: 156
   },
   {
     id: '4',
@@ -91,7 +88,6 @@ const mockFeaturedItems: Item[] = [
     description: 'Authentic leather handbag in mint condition',
     images: [featuredItemsImage],
     category: 'Accessories',
-    type: 'Handbag',
     size: 'One Size',
     condition: 'excellent',
     tags: ['designer', 'leather', 'authentic'],
@@ -102,9 +98,9 @@ const mockFeaturedItems: Item[] = [
       name: 'Lisa Thompson',
       rating: 5.0
     },
-    createdAt: '2024-01-12T16:45:00Z',
-    isSwapAvailable: true,
-    viewCount: 203
+    created_at: '2024-01-12T16:45:00Z',
+    is_available: true,
+    view_count: 203
   }
 ];
 

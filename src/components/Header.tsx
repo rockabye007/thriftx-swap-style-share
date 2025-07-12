@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, User, ShoppingBag, Menu, X, Heart, Star } from 'lucide-react';
+import { Search, User, ShoppingBag, Menu, X, Heart, Star, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   className?: string;
@@ -12,8 +13,13 @@ interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Will be replaced with real auth
-  const [userPoints] = useState(150); // Mock points
+  const { user, signOut } = useAuth();
+  const [userPoints] = useState(150); // Will be replaced with real points from profile
+
+  const handleSignOut = async () => {
+    await signOut();
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className={cn("sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60", className)}>
@@ -49,7 +55,7 @@ export function Header({ className }: HeaderProps) {
               How it Works
             </Link>
             
-            {isLoggedIn ? (
+            {user ? (
               <div className="flex items-center space-x-4">
                 <Badge variant="secondary" className="bg-gradient-primary text-white">
                   <Star className="h-3 w-3 mr-1" />
@@ -70,6 +76,9 @@ export function Header({ className }: HeaderProps) {
                     List Item
                   </Button>
                 </Link>
+                <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign Out">
+                  <LogOut className="h-5 w-5" />
+                </Button>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
@@ -125,7 +134,7 @@ export function Header({ className }: HeaderProps) {
                   How it Works
                 </Link>
                 
-                {isLoggedIn ? (
+                {user ? (
                   <div className="space-y-3 pt-4 border-t">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Points Balance</span>
@@ -151,6 +160,10 @@ export function Header({ className }: HeaderProps) {
                         List New Item
                       </Button>
                     </Link>
+                    <Button variant="outline" className="w-full justify-start" onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-3 pt-4 border-t">

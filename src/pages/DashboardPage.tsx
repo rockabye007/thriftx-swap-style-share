@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ItemCard, type Item } from '@/components/ItemCard';
@@ -48,16 +49,15 @@ const mockUserItems: Item[] = [
     description: 'Classic blue denim jacket from the 90s',
     images: [featuredItemsImage],
     category: 'Outerwear',
-    type: 'Jacket',
     size: 'M',
     condition: 'excellent',
     tags: ['vintage', 'denim', 'classic'],
     points: 45,
     location: 'New York, NY',
     uploader: mockUser,
-    createdAt: '2024-01-15T10:30:00Z',
-    isSwapAvailable: true,
-    viewCount: 127
+    created_at: '2024-01-15T10:30:00Z',
+    is_available: true,
+    view_count: 127
   },
   {
     id: '2',
@@ -65,16 +65,15 @@ const mockUserItems: Item[] = [
     description: 'Light and breezy dress perfect for summer',
     images: [featuredItemsImage],
     category: 'Dresses',
-    type: 'Casual',
     size: 'S',
     condition: 'good',
     tags: ['floral', 'summer', 'casual'],
     points: 35,
     location: 'New York, NY',
     uploader: mockUser,
-    createdAt: '2024-01-10T14:20:00Z',
-    isSwapAvailable: false,
-    viewCount: 89
+    created_at: '2024-01-10T14:20:00Z',
+    is_available: false,
+    view_count: 89
   }
 ];
 
@@ -101,6 +100,27 @@ const mockSwapHistory = [
 
 export function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const progressToNextLevel = ((mockUser.points / mockUser.nextLevelPoints) * 100);
 

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ItemCard, type Item } from '@/components/ItemCard';
+import { useItems } from '@/hooks/useItems';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,135 +24,6 @@ import {
 import { cn } from '@/lib/utils';
 import featuredItemsImage from '@/assets/featured-items.jpg';
 
-// Mock data for items
-const mockItems: Item[] = [
-  {
-    id: '1',
-    title: 'Vintage Denim Jacket',
-    description: 'Classic blue denim jacket from the 90s in excellent condition',
-    images: [featuredItemsImage],
-    category: 'Outerwear',
-    type: 'Jacket',
-    size: 'M',
-    condition: 'excellent',
-    tags: ['vintage', 'denim', 'classic'],
-    points: 45,
-    location: 'New York, NY',
-    uploader: {
-      id: 'user1',
-      name: 'Sarah Johnson',
-      rating: 4.8
-    },
-    createdAt: '2024-01-15T10:30:00Z',
-    isSwapAvailable: true,
-    viewCount: 127
-  },
-  {
-    id: '2',
-    title: 'Elegant Black Dress',
-    description: 'Perfect for evening events, worn only once',
-    images: [featuredItemsImage],
-    category: 'Dresses',
-    type: 'Evening',
-    size: 'S',
-    condition: 'good',
-    tags: ['elegant', 'black', 'evening'],
-    points: 60,
-    location: 'Los Angeles, CA',
-    uploader: {
-      id: 'user2',
-      name: 'Emma Davis',
-      rating: 4.9
-    },
-    createdAt: '2024-01-14T14:20:00Z',
-    isSwapAvailable: true,
-    viewCount: 89
-  },
-  {
-    id: '3',
-    title: 'Cozy Winter Sweater',
-    description: 'Warm wool sweater perfect for cold days',
-    images: [featuredItemsImage],
-    category: 'Knitwear',
-    type: 'Sweater',
-    size: 'L',
-    condition: 'excellent',
-    tags: ['wool', 'winter', 'cozy'],
-    points: 35,
-    location: 'Chicago, IL',
-    uploader: {
-      id: 'user3',
-      name: 'Michael Chen',
-      rating: 4.7
-    },
-    createdAt: '2024-01-13T09:15:00Z',
-    isSwapAvailable: true,
-    viewCount: 156
-  },
-  {
-    id: '4',
-    title: 'Designer Handbag',
-    description: 'Authentic leather handbag in mint condition',
-    images: [featuredItemsImage],
-    category: 'Accessories',
-    type: 'Handbag',
-    size: 'One Size',
-    condition: 'excellent',
-    tags: ['designer', 'leather', 'authentic'],
-    points: 120,
-    location: 'Miami, FL',
-    uploader: {
-      id: 'user4',
-      name: 'Lisa Thompson',
-      rating: 5.0
-    },
-    createdAt: '2024-01-12T16:45:00Z',
-    isSwapAvailable: true,
-    viewCount: 203
-  },
-  {
-    id: '5',
-    title: 'Casual Summer Top',
-    description: 'Light and airy top perfect for summer days',
-    images: [featuredItemsImage],
-    category: 'Tops',
-    type: 'Blouse',
-    size: 'M',
-    condition: 'good',
-    tags: ['summer', 'casual', 'lightweight'],
-    points: 25,
-    location: 'San Francisco, CA',
-    uploader: {
-      id: 'user5',
-      name: 'Alex Rivera',
-      rating: 4.6
-    },
-    createdAt: '2024-01-11T08:30:00Z',
-    isSwapAvailable: false,
-    viewCount: 67
-  },
-  {
-    id: '6',
-    title: 'Vintage Leather Boots',
-    description: 'Classic brown leather boots with minimal wear',
-    images: [featuredItemsImage],
-    category: 'Shoes',
-    type: 'Boots',
-    size: '9',
-    condition: 'excellent',
-    tags: ['vintage', 'leather', 'boots'],
-    points: 55,
-    location: 'Portland, OR',
-    uploader: {
-      id: 'user6',
-      name: 'Jordan Kim',
-      rating: 4.9
-    },
-    createdAt: '2024-01-10T15:20:00Z',
-    isSwapAvailable: true,
-    viewCount: 94
-  }
-];
 
 const categories = ['All', 'Outerwear', 'Dresses', 'Knitwear', 'Accessories', 'Tops', 'Shoes', 'Bottoms'];
 const sizes = ['All', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size'];
@@ -174,10 +46,11 @@ export function BrowsePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [minPoints, setMinPoints] = useState('');
   const [maxPoints, setMaxPoints] = useState('');
+  const { items, loading } = useItems();
 
   // Filter and sort items
   const filteredItems = useMemo(() => {
-    let filtered = mockItems.filter(item => {
+    let filtered = items.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -195,7 +68,7 @@ export function BrowsePage() {
     // Sort items
     switch (sortBy) {
       case 'oldest':
-        filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         break;
       case 'points-high':
         filtered.sort((a, b) => b.points - a.points);
@@ -204,14 +77,14 @@ export function BrowsePage() {
         filtered.sort((a, b) => a.points - b.points);
         break;
       case 'most-viewed':
-        filtered.sort((a, b) => b.viewCount - a.viewCount);
+        filtered.sort((a, b) => b.view_count - a.view_count);
         break;
       default: // newest
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
 
     return filtered;
-  }, [searchQuery, selectedCategory, selectedSize, selectedCondition, sortBy, minPoints, maxPoints]);
+  }, [items, searchQuery, selectedCategory, selectedSize, selectedCondition, sortBy, minPoints, maxPoints]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -243,7 +116,7 @@ export function BrowsePage() {
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">Browse Items</h1>
               <p className="text-muted-foreground">
-                Discover amazing fashion finds from our community of {mockItems.length} items
+                Discover amazing fashion finds from our community of {items.length} items
               </p>
             </div>
             
@@ -427,7 +300,17 @@ export function BrowsePage() {
             </div>
 
             {/* Items Grid/List */}
-            {filteredItems.length > 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-muted rounded-lg aspect-square mb-4"></div>
+                    <div className="h-4 bg-muted rounded mb-2"></div>
+                    <div className="h-4 bg-muted rounded w-2/3"></div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredItems.length > 0 ? (
               <div className={cn(
                 viewMode === 'grid' 
                   ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" 

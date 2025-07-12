@@ -12,21 +12,20 @@ export interface Item {
   description: string;
   images: string[];
   category: string;
-  type: string;
   size: string;
   condition: 'excellent' | 'good' | 'fair';
   tags: string[];
   points: number;
   location: string;
-  uploader: {
+  uploader?: {
     id: string;
     name: string;
     avatar?: string;
     rating: number;
   };
-  createdAt: string;
-  isSwapAvailable: boolean;
-  viewCount: number;
+  created_at: string;
+  is_available: boolean;
+  view_count: number;
 }
 
 interface ItemCardProps {
@@ -141,7 +140,7 @@ export function ItemCard({ item, className, showUploader = true }: ItemCardProps
         </Link>
 
         {/* Uploader Info */}
-        {showUploader && (
+        {showUploader && item.uploader && (
           <div className="flex items-center justify-between pt-2 border-t">
             <Link to={`/profile/${item.uploader.id}`} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <div className="w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
@@ -159,11 +158,11 @@ export function ItemCard({ item, className, showUploader = true }: ItemCardProps
             <div className="flex items-center space-x-3 text-xs text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <Eye className="h-3 w-3" />
-                <span>{item.viewCount}</span>
+                <span>{item.view_count}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Clock className="h-3 w-3" />
-                <span>{timeAgo(item.createdAt)}</span>
+                <span>{timeAgo(item.created_at)}</span>
               </div>
             </div>
           </div>
@@ -173,11 +172,11 @@ export function ItemCard({ item, className, showUploader = true }: ItemCardProps
         <div className="flex space-x-2 pt-2">
           <Link to={`/item/${item.id}`} className="flex-1">
             <Button 
-              variant={item.isSwapAvailable ? "default" : "outline"} 
+              variant={item.is_available ? "default" : "outline"} 
               className="w-full text-sm"
-              disabled={!item.isSwapAvailable}
+              disabled={!item.is_available}
             >
-              {item.isSwapAvailable ? "Request Swap" : "Unavailable"}
+              {item.is_available ? "Request Swap" : "Unavailable"}
             </Button>
           </Link>
           <Link to={`/item/${item.id}`}>
