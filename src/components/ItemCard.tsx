@@ -35,7 +35,6 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, className, showUploader = true }: ItemCardProps) {
-  const [isFavorited, setIsFavorited] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const getConditionColor = (condition: string) => {
@@ -76,18 +75,6 @@ export function ItemCard({ item, className, showUploader = true }: ItemCardProps
               </div>
             )}
             
-            {/* Favorite Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 bg-white/80 hover:bg-white h-8 w-8 rounded-full shadow-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsFavorited(!isFavorited);
-              }}
-            >
-              <Heart className={cn("h-4 w-4", isFavorited ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
-            </Button>
 
             {/* Condition Badge */}
             <Badge 

@@ -52,8 +52,8 @@ export function BrowsePage() {
   const filteredItems = useMemo(() => {
     let filtered = items.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                          (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
       
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
       const matchesSize = selectedSize === 'All' || item.size === selectedSize;

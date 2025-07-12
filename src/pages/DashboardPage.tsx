@@ -1,401 +1,486 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useItems } from '@/hooks/useItems';
+import { useFavorites } from '@/hooks/useFavorites';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { ItemCard, type Item } from '@/components/ItemCard';
-import { Button } from '@/components/ui/button';
+import { ItemCard } from '@/components/ItemCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/hooks/use-toast';
 import { 
   User, 
+  Package, 
+  Heart, 
   Star, 
-  ShoppingBag, 
-  Heart,
-  TrendingUp,
-  Plus,
-  Settings,
-  MapPin,
+  TrendingUp, 
+  Plus, 
   Calendar,
+  MapPin,
+  Settings,
   Award,
-  Eye,
-  MessageSquare
+  Gift,
+  ShoppingBag,
+  BarChart3
 } from 'lucide-react';
-import featuredItemsImage from '@/assets/featured-items.jpg';
 
-// Mock user data
-const mockUser = {
-  id: 'user1',
-  name: 'Sarah Johnson',
-  email: 'sarah@example.com',
-  avatar: '',
-  location: 'New York, NY',
-  joinedDate: '2024-01-01',
-  rating: 4.8,
-  totalSwaps: 23,
-  points: 150,
-  level: 'Gold Swapper',
-  nextLevelPoints: 200
-};
-
-// Mock items data
-const mockUserItems: Item[] = [
-  {
-    id: '1',
-    title: 'Vintage Denim Jacket',
-    description: 'Classic blue denim jacket from the 90s',
-    images: [featuredItemsImage],
-    category: 'Outerwear',
-    size: 'M',
-    condition: 'excellent',
-    tags: ['vintage', 'denim', 'classic'],
-    points: 45,
-    location: 'New York, NY',
-    uploader: mockUser,
-    created_at: '2024-01-15T10:30:00Z',
-    is_available: true,
-    view_count: 127
-  },
-  {
-    id: '2',
-    title: 'Summer Floral Dress',
-    description: 'Light and breezy dress perfect for summer',
-    images: [featuredItemsImage],
-    category: 'Dresses',
-    size: 'S',
-    condition: 'good',
-    tags: ['floral', 'summer', 'casual'],
-    points: 35,
-    location: 'New York, NY',
-    uploader: mockUser,
-    created_at: '2024-01-10T14:20:00Z',
-    is_available: false,
-    view_count: 89
-  }
-];
-
-const mockSwapHistory = [
-  {
-    id: 'swap1',
-    type: 'completed',
-    otherUser: 'Emma Davis',
-    itemGiven: 'Black Leather Boots',
-    itemReceived: 'Vintage Silk Scarf',
-    date: '2024-01-12',
-    points: 25
-  },
-  {
-    id: 'swap2',
-    type: 'pending',
-    otherUser: 'Michael Chen',
-    itemGiven: 'Wool Sweater',
-    itemReceived: 'Denim Jeans',
-    date: '2024-01-14',
-    points: 40
-  }
-];
+interface SwapHistory {
+  id: string;
+  itemTitle: string;
+  partnerName: string;
+  date: string;
+  status: 'completed' | 'pending' | 'cancelled';
+  type: 'outgoing' | 'incoming';
+}
 
 export function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { items, loading: itemsLoading } = useItems();
+  const { favorites, loading: favoritesLoading } = useFavorites();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+  const [swapHistory, setSwapHistory] = useState<SwapHistory[]>([]);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [fullName, setFullName] = useState('');
 
-  // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login');
+    if (!authLoading && !user) {
+      navigate('/auth');
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading, navigate]);
 
-  if (loading) {
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchSwapHistory();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+      setFullName(data.full_name || '');
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchSwapHistory = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('swaps')
+        .select('*')
+        .or(`requester_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // For now, just use basic swap data without complex joins
+      const formattedHistory: SwapHistory[] = data?.map(swap => ({
+        id: swap.id,
+        itemTitle: 'Item',
+        partnerName: 'User',
+        date: new Date(swap.created_at).toLocaleDateString(),
+        status: swap.status as 'completed' | 'pending' | 'cancelled',
+        type: swap.requester_id === user.id ? 'outgoing' : 'incoming'
+      })) || [];
+      
+      setSwapHistory(formattedHistory);
+    } catch (error) {
+      console.error('Error fetching swap history:', error);
+    }
+  };
+
+  const updateProfile = async () => {
+    if (!user || !profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: fullName })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+      
+      setEditProfileOpen(false);
+      fetchProfile();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Get user's items
+  const userItems = items.filter(item => item.user_id === user?.id);
+  const userPoints = profile?.points || 100;
+
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
-
-  if (!user) {
-    return null;
-  }
-
-  const progressToNextLevel = ((mockUser.points / mockUser.nextLevelPoints) * 100);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <div className="mb-8">
-          <Card className="shadow-elegant">
+        <div className="max-w-7xl mx-auto">
+          {/* Profile Section */}
+          <Card className="mb-8">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {mockUser.name.charAt(0)}
-                  </div>
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={profile?.avatar_url} />
+                    <AvatarFallback className="text-lg font-semibold bg-gradient-primary text-white">
+                      {(profile?.full_name || user?.email || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="space-y-2">
-                    <h1 className="text-2xl font-bold text-foreground">{mockUser.name}</h1>
+                    <h2 className="text-2xl font-bold text-foreground">
+                      {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                    </h2>
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{mockUser.location}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Joined {new Date(mockUser.joinedDate).toLocaleDateString()}</span>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        Joined {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Recently'}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="font-medium">{mockUser.rating}</span>
-                        <span className="text-muted-foreground">({mockUser.totalSwaps} swaps)</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-gradient-primary text-white">
-                        {mockUser.level}
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-xs">
+                        {userPoints} Points
                       </Badge>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/profile/edit">
-                    <Button variant="outline" className="w-full sm:w-auto">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                  </Link>
-                  <Link to="/add-item">
-                    <Button variant="hero" className="w-full sm:w-auto">
-                      <Plus className="h-4 w-4 mr-2" />
-                      List New Item
-                    </Button>
-                  </Link>
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Profile</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="fullName">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        <Button onClick={updateProfile} className="w-full">
+                          Save Changes
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  <Button size="sm" onClick={() => navigate('/add-item')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    List New Item
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6 text-center space-y-2">
-              <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
-                <Star className="h-6 w-6 text-white" />
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Items Listed</p>
+                    <p className="text-3xl font-bold text-primary">{userItems.length}</p>
+                  </div>
+                  <Package className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Successful Swaps</p>
+                    <p className="text-3xl font-bold text-primary">{swapHistory.filter(s => s.status === 'completed').length}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Points Available</p>
+                    <p className="text-3xl font-bold text-primary">{userPoints}</p>
+                  </div>
+                  <Award className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Favorites</p>
+                    <p className="text-3xl font-bold text-primary">{favorites.length}</p>
+                  </div>
+                  <Heart className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button variant="outline" onClick={() => navigate('/add-item')} className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <Plus className="h-6 w-6" />
+                  <span>List New Item</span>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/browse')} className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <ShoppingBag className="h-6 w-6" />
+                  <span>Browse Items</span>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/favorites')} className="h-auto p-4 flex flex-col items-center space-y-2">
+                  <Heart className="h-6 w-6" />
+                  <span>View Favorites</span>
+                </Button>
               </div>
-              <div className="text-2xl font-bold text-primary">{mockUser.points}</div>
-              <div className="text-sm text-muted-foreground">Points Balance</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center space-y-2">
-              <div className="w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto">
-                <ShoppingBag className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-2xl font-bold text-secondary">{mockUserItems.length}</div>
-              <div className="text-sm text-muted-foreground">Items Listed</div>
-            </CardContent>
-          </Card>
+          {/* Tabs Section */}
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="items">My Items</TabsTrigger>
+              <TabsTrigger value="swaps">Swap History</TabsTrigger>
+            </TabsList>
 
-          <Card>
-            <CardContent className="p-6 text-center space-y-2">
-              <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <div className="text-2xl font-bold text-accent">{mockUser.totalSwaps}</div>
-              <div className="text-sm text-muted-foreground">Completed Swaps</div>
-            </CardContent>
-          </Card>
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Recent Activity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {swapHistory.length > 0 ? (
+                      <div className="space-y-4">
+                        {swapHistory.slice(0, 3).map((activity) => (
+                          <div key={activity.id} className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                            <div className={`w-2 h-2 rounded-full ${
+                              activity.status === 'completed' ? 'bg-green-500' : 
+                              activity.status === 'pending' ? 'bg-blue-500' : 'bg-red-500'
+                            }`}></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">
+                                {activity.type === 'outgoing' ? 'Requested swap for' : 'Received swap request for'} {activity.itemTitle}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{activity.date}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-8">No recent activity</p>
+                    )}
+                  </CardContent>
+                </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center space-y-2">
-              <div className="w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto">
-                <Award className="h-6 w-6 text-white" />
+                {/* Items Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your Items</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {userItems.length > 0 ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                          You have {userItems.length} item{userItems.length !== 1 ? 's' : ''} listed
+                        </p>
+                        <div className="space-y-2">
+                          {userItems.slice(0, 3).map((item) => (
+                            <div key={item.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                              <span className="text-sm font-medium">{item.title}</span>
+                              <Badge variant="outline">{item.points} pts</Badge>
+                            </div>
+                          ))}
+                        </div>
+                        {userItems.length > 3 && (
+                          <Button variant="outline" size="sm" onClick={() => {
+                            const itemsTab = document.querySelector('[data-value="items"]');
+                            if (itemsTab && 'click' in itemsTab) {
+                              (itemsTab as HTMLElement).click();
+                            }
+                          }}>
+                            View all items
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">No items listed yet</p>
+                        <Button onClick={() => navigate('/add-item')}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          List Your First Item
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-              <div className="text-2xl font-bold text-primary">{mockUser.rating}</div>
-              <div className="text-sm text-muted-foreground">User Rating</div>
-            </CardContent>
-          </Card>
-        </div>
+            </TabsContent>
 
-        {/* Level Progress */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="space-y-4">
+            <TabsContent value="items" className="space-y-6" data-value="items">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Level Progress</h3>
-                <Badge variant="outline">{mockUser.level}</Badge>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Current Points: {mockUser.points}</span>
-                  <span>Next Level: {mockUser.nextLevelPoints}</span>
-                </div>
-                <Progress value={progressToNextLevel} className="h-2" />
-                <p className="text-sm text-muted-foreground">
-                  {mockUser.nextLevelPoints - mockUser.points} more points to reach Platinum Swapper
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="items">My Items</TabsTrigger>
-            <TabsTrigger value="swaps">Swap History</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2" />
-                    Recent Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-primary rounded-full" />
-                      <span className="text-sm">Listed "Vintage Denim Jacket" (+5 points)</span>
-                      <span className="text-xs text-muted-foreground">2 days ago</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-sm">Completed swap with Emma Davis (+25 points)</span>
-                      <span className="text-xs text-muted-foreground">5 days ago</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                      <span className="text-sm">Received 5-star rating from Michael Chen</span>
-                      <span className="text-xs text-muted-foreground">1 week ago</span>
-                    </div>
-                  </div>
-                  <Separator />
-                  <Link to="/activity">
-                    <Button variant="outline" size="sm" className="w-full">
-                      View All Activity
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link to="/add-item">
-                      <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-1">
-                        <Plus className="h-5 w-5" />
-                        <span className="text-xs">List Item</span>
-                      </Button>
-                    </Link>
-                    <Link to="/browse">
-                      <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-1">
-                        <Eye className="h-5 w-5" />
-                        <span className="text-xs">Browse</span>
-                      </Button>
-                    </Link>
-                    <Link to="/favorites">
-                      <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-1">
-                        <Heart className="h-5 w-5" />
-                        <span className="text-xs">Favorites</span>
-                      </Button>
-                    </Link>
-                    <Link to="/messages">
-                      <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-1">
-                        <MessageSquare className="h-5 w-5" />
-                        <span className="text-xs">Messages</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="items" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">My Listed Items ({mockUserItems.length})</h3>
-              <Link to="/add-item">
-                <Button variant="hero">
+                <h3 className="text-lg font-semibold">Your Listed Items</h3>
+                <Button onClick={() => navigate('/add-item')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add New Item
                 </Button>
-              </Link>
-            </div>
-
-            {mockUserItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockUserItems.map((item) => (
-                  <ItemCard key={item.id} item={item} showUploader={false} />
-                ))}
               </div>
-            ) : (
-              <Card className="p-12">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                    <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-xl font-semibold">No items listed yet</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    Start by listing your first item to begin swapping with the community.
-                  </p>
-                  <Link to="/add-item">
-                    <Button variant="hero">List Your First Item</Button>
-                  </Link>
+              
+              {itemsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-muted rounded-lg aspect-square mb-4"></div>
+                      <div className="h-4 bg-muted rounded mb-2"></div>
+                      <div className="h-4 bg-muted rounded w-2/3"></div>
+                    </div>
+                  ))}
                 </div>
-              </Card>
-            )}
-          </TabsContent>
+              ) : userItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {userItems.map((item, index) => (
+                    <div key={item.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <ItemCard item={item} showUploader={false} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Card className="p-12">
+                  <div className="text-center space-y-4">
+                    <Package className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <h3 className="text-xl font-semibold">No items listed</h3>
+                    <p className="text-muted-foreground">
+                      Start by listing your first item to join the ThriftX community!
+                    </p>
+                    <Button onClick={() => navigate('/add-item')}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      List Your First Item
+                    </Button>
+                  </div>
+                </Card>
+              )}
+            </TabsContent>
 
-          <TabsContent value="swaps" className="space-y-6">
-            <div className="space-y-4">
+            <TabsContent value="swaps" className="space-y-6">
               <h3 className="text-lg font-semibold">Swap History</h3>
               
-              {mockSwapHistory.map((swap) => (
-                <Card key={swap.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={swap.type === 'completed' ? 'default' : 'secondary'}>
-                            {swap.type === 'completed' ? 'Completed' : 'Pending'}
-                          </Badge>
-                          <span className="font-medium">Swap with {swap.otherUser}</span>
+              {swapHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {swapHistory.map((swap, index) => (
+                    <Card key={swap.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{swap.itemTitle}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {swap.type === 'outgoing' ? 'Swapped with' : 'Request from'} {swap.partnerName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{swap.date}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <Badge 
+                              variant={
+                                swap.status === 'completed' ? 'default' : 
+                                swap.status === 'pending' ? 'secondary' : 'destructive'
+                              }
+                            >
+                              {swap.status.charAt(0).toUpperCase() + swap.status.slice(1)}
+                            </Badge>
+                            <Badge variant="outline">
+                              {swap.type === 'outgoing' ? 'Sent' : 'Received'}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          Gave: {swap.itemGiven} • Received: {swap.itemReceived}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {new Date(swap.date).toLocaleDateString()} • {swap.points} points
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="p-12">
+                  <div className="text-center space-y-4">
+                    <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <h3 className="text-xl font-semibold">No swap history</h3>
+                    <p className="text-muted-foreground">
+                      Your swap activities will appear here once you start trading!
+                    </p>
+                    <Button onClick={() => navigate('/browse')}>
+                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      Browse Items to Swap
+                    </Button>
+                  </div>
                 </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       <Footer />
