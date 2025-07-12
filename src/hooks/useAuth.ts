@@ -123,6 +123,10 @@ export function useAuth() {
         return { success: false, error: error.message };
       }
 
+      // Clear local state immediately
+      setSession(null);
+      setUser(null);
+
       toast({
         title: "Signed out",
         description: "You have been signed out successfully.",
