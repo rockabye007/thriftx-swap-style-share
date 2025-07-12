@@ -20,8 +20,7 @@ export function AuthPage({ mode }: AuthPageProps) {
     email: '',
     password: '',
     confirmPassword: '',
-    name: '',
-    agreedToTerms: false
+    name: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { signIn, signUp, loading, user } = useAuth();
@@ -61,10 +60,6 @@ export function AuthPage({ mode }: AuthPageProps) {
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
       }
-
-      if (!formData.agreedToTerms) {
-        newErrors.agreedToTerms = 'You must agree to continue';
-      }
     }
 
     setErrors(newErrors);
@@ -95,7 +90,7 @@ export function AuthPage({ mode }: AuthPageProps) {
     }
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -231,22 +226,6 @@ export function AuthPage({ mode }: AuthPageProps) {
                   </div>
                 )}
 
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <div className="flex items-start space-x-2">
-                      <Checkbox 
-                        id="terms"
-                        checked={formData.agreedToTerms}
-                        onCheckedChange={(checked) => handleInputChange('agreedToTerms', checked === true)}
-                        className="mt-1"
-                      />
-                      <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
-                        I agree to continue with thriftX's sustainable fashion mission
-                      </Label>
-                    </div>
-                    {errors.agreedToTerms && <p className="text-sm text-destructive">{errors.agreedToTerms}</p>}
-                  </div>
-                )}
 
                 <Button 
                   type="submit" 

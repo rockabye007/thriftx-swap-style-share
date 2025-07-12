@@ -66,11 +66,8 @@ export function Footer() {
               <Link to="/contact" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
                 Contact Us
               </Link>
-              <Link to="/terms" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Terms of Service
-              </Link>
-              <Link to="/privacy" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Privacy Policy
+              <Link to="/dashboard" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
+                Dashboard
               </Link>
             </nav>
           </div>
