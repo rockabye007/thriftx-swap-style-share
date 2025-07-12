@@ -5,6 +5,82 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useItem } from '@/hooks/useItem';
+import vintageJacketImage from '@/assets/vintage-denim-jacket.jpg';
+import blackDressImage from '@/assets/black-evening-dress.jpg';
+import winterSweaterImage from '@/assets/winter-sweater.jpg';
+import designerBagImage from '@/assets/designer-handbag.jpg';
+
+// Mock data for landing page items (IDs 1-4)
+const mockItems = {
+  '1': {
+    id: '1',
+    title: 'Vintage Denim Jacket',
+    description: 'Classic blue denim jacket from the 90s in excellent condition. Perfect for casual wear and layering.',
+    images: [vintageJacketImage],
+    size: 'M',
+    condition: 'excellent',
+    tags: ['vintage', 'denim', 'classic'],
+    points: 45,
+    location: 'New York, NY',
+    profiles: {
+      full_name: 'Sarah Johnson'
+    },
+    created_at: '2024-01-15T10:30:00Z',
+    is_available: true,
+    view_count: 127
+  },
+  '2': {
+    id: '2',
+    title: 'Elegant Black Dress',
+    description: 'Perfect for evening events, this elegant black dress is in great condition with a flattering fit.',
+    images: [blackDressImage],
+    size: 'S',
+    condition: 'good',
+    tags: ['elegant', 'black', 'evening'],
+    points: 60,
+    location: 'Los Angeles, CA',
+    profiles: {
+      full_name: 'Emma Davis'
+    },
+    created_at: '2024-01-14T14:20:00Z',
+    is_available: true,
+    view_count: 89
+  },
+  '3': {
+    id: '3',
+    title: 'Cozy Winter Sweater',
+    description: 'Warm wool sweater perfect for cold days. Super soft and comfortable to wear.',
+    images: [winterSweaterImage],
+    size: 'L',
+    condition: 'excellent',
+    tags: ['wool', 'winter', 'cozy'],
+    points: 35,
+    location: 'Chicago, IL',
+    profiles: {
+      full_name: 'Michael Chen'
+    },
+    created_at: '2024-01-13T09:15:00Z',
+    is_available: true,
+    view_count: 156
+  },
+  '4': {
+    id: '4',
+    title: 'Designer Handbag',
+    description: 'Authentic leather handbag in mint condition. A timeless piece that goes with any outfit.',
+    images: [designerBagImage],
+    size: 'One Size',
+    condition: 'excellent',
+    tags: ['designer', 'leather', 'authentic'],
+    points: 120,
+    location: 'Miami, FL',
+    profiles: {
+      full_name: 'Lisa Thompson'
+    },
+    created_at: '2024-01-12T16:45:00Z',
+    is_available: true,
+    view_count: 203
+  }
+};
 
 const getConditionColor = (condition: string) => {
   switch (condition) {
@@ -27,7 +103,10 @@ const timeAgo = (dateString: string) => {
 
 export default function ItemDetailPage() {
   const { id } = useParams();
-  const { data: item, isLoading, error } = useItem(id!);
+  const { data: dbItem, isLoading, error } = useItem(id!);
+  
+  // Use database item if available, otherwise fall back to mock data for IDs 1-4
+  const item = dbItem || (mockItems[id as keyof typeof mockItems]);
 
   if (isLoading) {
     return (
@@ -44,7 +123,7 @@ export default function ItemDetailPage() {
     );
   }
 
-  if (error || !item) {
+  if ((error || !dbItem) && !mockItems[id as keyof typeof mockItems]) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
