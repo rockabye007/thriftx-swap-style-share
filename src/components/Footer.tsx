@@ -47,7 +47,7 @@ export function Footer() {
               <Link to="/add-item" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
                 List an Item
               </Link>
-              <Link to="/categories" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link to="/browse" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
                 Categories
               </Link>
             </nav>

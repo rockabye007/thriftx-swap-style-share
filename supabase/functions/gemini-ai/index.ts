@@ -25,7 +25,7 @@ serve(async (req) => {
       recommend: 'You are a personal stylist. Based on the user\'s style preferences and item details, suggest complementary clothing items they might want to swap for. Be specific about styles, colors, and occasions.',
     };
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
