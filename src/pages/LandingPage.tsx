@@ -7,14 +7,12 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { 
   Recycle, 
-  Users, 
   Star, 
   ArrowRight, 
   ShoppingBag, 
   Heart,
   Zap,
   Shield,
-  TrendingUp,
   Globe
 } from 'lucide-react';
 import heroImage from '@/assets/hero-image.jpg';
@@ -104,12 +102,6 @@ const mockFeaturedItems: Item[] = [
   }
 ];
 
-const stats = [
-  { number: '50K+', label: 'Items Swapped', icon: ShoppingBag },
-  { number: '25K+', label: 'Happy Members', icon: Users },
-  { number: '4.9', label: 'Average Rating', icon: Star },
-  { number: '85%', label: 'Successful Swaps', icon: TrendingUp }
-];
 
 const features = [
   {
@@ -181,24 +173,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center space-y-3 animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="mx-auto w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <stat.icon className="h-6 w-6 text-white" />
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl lg:text-4xl font-bold text-primary">{stat.number}</div>
-                  <div className="text-muted-foreground">{stat.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-20">

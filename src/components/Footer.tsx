@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Heart, Recycle, Shield, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 export function Footer() {
   return (
@@ -53,46 +51,7 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Support */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Support</h3>
-            <nav className="space-y-3">
-              <Link to="/help" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Help Center
-              </Link>
-              <Link to="/safety" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Safety Guidelines
-              </Link>
-              <Link to="/contact" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Contact Us
-              </Link>
-              <Link to="/dashboard" className="block text-muted-foreground hover:text-primary transition-colors text-sm">
-                Dashboard
-              </Link>
-            </nav>
-          </div>
 
-          {/* Newsletter */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Stay Updated</h3>
-            <p className="text-muted-foreground text-sm">
-              Get the latest sustainable fashion tips and exclusive swap opportunities.
-            </p>
-            <div className="space-y-3">
-              <div className="flex space-x-2">
-                <Input 
-                  placeholder="Your email" 
-                  className="flex-1 bg-background"
-                />
-                <Button variant="premium" size="sm">
-                  Subscribe
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                We respect your privacy. Unsubscribe anytime.
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Bar */}
@@ -112,14 +71,6 @@ export function Footer() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Link to="/mobile" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Mobile App
-              </Link>
-              <Link to="/sustainability" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Our Impact
-              </Link>
-            </div>
           </div>
         </div>
       </div>
