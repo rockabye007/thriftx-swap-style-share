@@ -16,7 +16,10 @@ import {
   Globe
 } from 'lucide-react';
 import heroImage from '@/assets/hero-image.jpg';
-import featuredItemsImage from '@/assets/featured-items.jpg';
+import vintageJacketImage from '@/assets/vintage-denim-jacket.jpg';
+import blackDressImage from '@/assets/black-evening-dress.jpg';
+import winterSweaterImage from '@/assets/winter-sweater.jpg';
+import designerBagImage from '@/assets/designer-handbag.jpg';
 
 // Mock data for featured items
 const mockFeaturedItems: Item[] = [
@@ -24,7 +27,7 @@ const mockFeaturedItems: Item[] = [
     id: '1',
     title: 'Vintage Denim Jacket',
     description: 'Classic blue denim jacket from the 90s',
-    images: [featuredItemsImage],
+    images: [vintageJacketImage],
     category: 'Outerwear',
     size: 'M',
     condition: 'excellent',
@@ -44,7 +47,7 @@ const mockFeaturedItems: Item[] = [
     id: '2',
     title: 'Elegant Black Dress',
     description: 'Perfect for evening events',
-    images: [featuredItemsImage],
+    images: [blackDressImage],
     category: 'Dresses',
     size: 'S',
     condition: 'good',
@@ -64,7 +67,7 @@ const mockFeaturedItems: Item[] = [
     id: '3',
     title: 'Cozy Winter Sweater',
     description: 'Warm wool sweater perfect for cold days',
-    images: [featuredItemsImage],
+    images: [winterSweaterImage],
     category: 'Knitwear',
     size: 'L',
     condition: 'excellent',
@@ -84,7 +87,7 @@ const mockFeaturedItems: Item[] = [
     id: '4',
     title: 'Designer Handbag',
     description: 'Authentic leather handbag in mint condition',
-    images: [featuredItemsImage],
+    images: [designerBagImage],
     category: 'Accessories',
     size: 'One Size',
     condition: 'excellent',
